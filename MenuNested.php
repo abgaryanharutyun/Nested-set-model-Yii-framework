@@ -41,14 +41,11 @@ class MenuNested
     public $rightField = 'rgt';
 
 
-
-
     /**
      * title of menu
      * @var string
      */
     public $titleName = 'name';
-
 
 
     /**
@@ -63,13 +60,14 @@ class MenuNested
      * @var str model class name for active record
      */
     public $modelClassName = 'Menu';
+
     /**
      * Method insertMenu for insert new menu
      * @param null $parentId (optional ) if parentId == null if record parent record and left = 1 right =2
      * @param array $data (optional) your inserted data
      * @param bool $child (optional) if child true then your added menu child menu
      */
-    public function insertMenu($parentId = null, array $data = array(), $child = false)
+    public function insertMenu($parentId = null, array $data = array(), $child = false, $obj = false)
     {
         $tableName = $this->tableName;
         $modelClassName = $this->modelClassName;
@@ -86,8 +84,8 @@ class MenuNested
                 $parentRight = $parentMenu->$rgt;
             }
         }
-        $sqlRgt = "UPDATE menu set $rgt =$rgt+2 WHERE $rgt>$parentRight";
-        $sqlLft = "UPDATE menu set $lft =$lft+2 WHERE $lft>$parentRight";
+        $sqlRgt = "UPDATE $tableName set $rgt =$rgt+2 WHERE $rgt>$parentRight";
+        $sqlLft = "UPDATE $tableName set $lft =$lft+2 WHERE $lft>$parentRight";
         $commandRgt = $this->createCommand($sqlRgt);
         $commandRgt->execute(); // execute the non-query SQL
         $commandLft = $this->createCommand($sqlLft);
@@ -96,9 +94,13 @@ class MenuNested
         $model->attributes = $data;
         $model->$lft = $parentRight + 1;
         $model->$rgt = $parentRight + 2;
-        if ($model->save())
+
+        if ($model->save()) {
+            if ($obj) {
+                return $model;
+            }
             return true;
-        else {
+        } else {
             return false;
         }
     }
@@ -120,7 +122,7 @@ class MenuNested
                 FROM $tableName as node, $tableName as parent WHERE  node.$lft BETWEEN parent.$lft and parent.$rgt GROUP BY node.$title ORDER BY node.$lft";
         $tree = $this->createCommand($sql);
         $tree->execute();
-        $treeResult=$tree->queryAll();
+        $treeResult = $tree->queryAll();
         return $treeResult;
     }
 
