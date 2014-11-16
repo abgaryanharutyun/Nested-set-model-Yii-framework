@@ -13,6 +13,7 @@
  * @property $leftField string public for tableName left field name default name lft
  * @property $rightField string public for tableName right field name default name rgt
  * @property $autoIncrement your table primary  field Name
+ * @property $modelClassName for active record
  */
 class MenuNested
 {
@@ -57,6 +58,11 @@ class MenuNested
 
     public $autoIncrement = "id";
 
+
+    /**
+     * @var str model class name for active record
+     */
+    public $modelClassName = 'Menu';
     /**
      * Method insertMenu for insert new menu
      * @param null $parentId (optional ) if parentId == null if record parent record and left = 1 right =2
@@ -66,6 +72,7 @@ class MenuNested
     public function insertMenu($parentId = null, array $data = array(), $child = false)
     {
         $tableName = $this->tableName;
+        $modelClassName = $this->modelClassName;
         $lft = $this->leftField;
         $rgt = $this->rightField;
         $parentMenu = $this->currentMenu($parentId);
@@ -85,7 +92,7 @@ class MenuNested
         $commandRgt->execute(); // execute the non-query SQL
         $commandLft = $this->createCommand($sqlLft);
         $commandLft->execute();
-        $model = new $tableName;
+        $model = new $modelClassName;
         $model->attributes = $data;
         $model->$lft = $parentRight + 1;
         $model->$rgt = $parentRight + 2;
@@ -245,8 +252,8 @@ class MenuNested
      */
     public function  currentMenu($id)
     {
-        $tableName = $this->tableName;
-        return $tableName::model()->findByPk($id);
+        $modelClass = $this->modelClassName;
+        return $modelClass::model()->findByPk($id);
     }
 
 
