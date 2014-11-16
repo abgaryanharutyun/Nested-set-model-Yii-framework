@@ -69,7 +69,8 @@ class MenuNested
         $lft = $this->leftField;
         $rgt = $this->rightField;
         $parentMenu = $this->currentMenu($parentId);
-        if ($parentMenu == null || $parentId = null) {
+
+        if ($parentMenu == null || $parentId == null) {
             $parentRight = 0;
         } else {
             if ($child) {
@@ -101,34 +102,19 @@ class MenuNested
      * @return array
      */
 
-    public function createTree($arrData=array())
+    public function createTree()
     {
         $rgt = $this->rightField;
         $lft = $this->leftField;
-        $stack = array();
-        $arraySet = array();
-        if (empty($arrData)) {
-            $arrData = $this->getAllTableList();
-        }
-
-
-        if (empty($arrData)) {
-            return false;
-        }
-        foreach ($arrData as $intKey => $arrValues) {
-            $stackSize = count($stack); //how many opened tags?
-            while ($stackSize > 0 && $stack[$stackSize - 1][$rgt] < $arrValues[$lft]) {
-                array_pop($stack); //close sibling and his childrens
-                $stackSize--;
-            }
-            $link =& $arraySet;
-            for ($i = 0; $i < $stackSize; $i++) {
-                $link =& $link[$stack[$i]['index']]["children"]; //navigate to the proper children array
-            }
-            $tmp = array_push($link, array('item' => $arrValues, 'children' => array()));
-            array_push($stack, array('index' => $tmp - 1, $rgt => $arrValues[$rgt]));
-        }
-        return $arraySet;
+        $tableName = $this->tableName;
+        $title = $this->titleName;
+        $autoincrement = $this->autoIncrement;
+        $sql = "SELECT node.$autoincrement, CONCAT(REPEAT('-----', COUNT(parent.$title)-1), node.$title) as name
+                FROM $tableName as node, $tableName as parent WHERE  node.$lft BETWEEN parent.$lft and parent.$rgt GROUP BY node.$title ORDER BY node.$lft";
+        $tree = $this->createCommand($sql);
+        $tree->execute();
+        $treeResult=$tree->queryAll();
+        return $treeResult;
     }
 
     /**
