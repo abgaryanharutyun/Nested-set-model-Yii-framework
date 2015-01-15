@@ -19,6 +19,7 @@ class MenuNested
 {
 
 
+
     /**
      * your table Name
      * @var string
